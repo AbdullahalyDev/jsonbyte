@@ -1,7 +1,7 @@
 /**
  * ? jsonbyte is a package that helps programmers control the JSON file via Functions
  * ? v1.1.6
- * ! Did you encounter any issues, head over to https://github.com/AbdullahalyDev/jsonbyte/issues
+ * ! Did you run into any issues, head over to https://github.com/AbdullahalyDev/jsonbyte/issues
  */
 
 const fs = require("fs");
