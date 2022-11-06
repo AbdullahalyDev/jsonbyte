@@ -1,6 +1,6 @@
 {
   "name": "jsonbyte",
-  "version": "1.1.0",
+  "version": "1.1.6",
   "description": "jsonbyte is a package that helps programmers control the JSON file via Functions",
   "main": "index.js",
   "directories": {},

@@ -1,210 +1,401 @@
 /**
- * JavaScript.json is a package that helps programmers control the JSON file via Functions
+ * ? jsonbyte is a package that helps programmers control the JSON file via Functions
+ * ? v1.1.6
+ * ! Did you encounter any issues, head over to https://github.com/AbdullahalyDev/jsonbyte/issues
  */
 
 const fs = require("fs");
 const path = require("path");
 
-const error = require("./utils/error");
-const propertyExists = require("./utils/propertyExists")
-
-var pastDataFile = Object.create(null);
-var dataFile = Object.create(null);
-var savePath = null;
-
 class json {
 
 
-    constructor(filePath = "") {
+    /**
+     * @types
+     * @param {string} path 
+     */
+    constructor(path) {
         try {
-            if (!fs.existsSync(filePath)) {
-                fs.writeFileSync(filePath, JSON.stringify({}))
+            if (!fs.existsSync(path)) {
+                fs.writeFileSync(path, JSON.stringify({}))
             };
-            if (!fs.existsSync(filePath)) return error("JSON File Not Found");
-            var read = fs.readFileSync(filePath);
-            if (read == "" && filePath.endsWith(".json")) {
-                read = "{}";
-            }
+
+
+            var read = fs.readFileSync(path);
             const data = JSON.parse(read);
-            dataFile = data;
-            pastDataFile = data;
-            savePath = filePath
+
+            this.#data = data;
+            this.#main = data;
+            this.#path = path;
         }
         catch (err) {
-            return error(err);
+            throw new Error(err);
         }
 
     }
 
 
+
+    // Private Variables
+    #data = null;
+    #main = null;
+    #path = null;
+
+
+
+
+    // Main Functions
+
+
+
+    /**
+     * 
+     * @param {number} space 
+     * @returns
+     */
+    
     save(space = 4) {
-        fs.writeFileSync(savePath, JSON.stringify(dataFile, null, space))
+        fs.writeFileSync(this.#path, JSON.stringify(this.#data, null, space))
         return this;
     }
+
+
+
+
+    /**
+     * 
+     * @param {string} path 
+     * @param {number} space 
+     * @returns
+     */
 
     saveNewFile(path, space = 4) {
-        fs.writeFileSync(path, JSON.stringify(dataFile, null, space))
+        fs.writeFileSync(path, JSON.stringify(this.#data, null, space))
         return this;
     }
 
-    create(key, value) {
-        const data = Object(dataFile);
-        if (propertyExists(data, key)) return error(`${key} is already exists`);
-        data[key] = value;
+
+
+
+    /**
+     * 
+     * @param {string} key 
+     * @param {*} value 
+     * @returns
+     */
+
+    set(key, value) {
+        if (this.#data.hasOwnProperty(key)) throw new Error(`${key} is already exists`);
+        this.#data[key] = value;
         return this;
     }
+
+
+
+
+    /**
+     * 
+     * @param {string} key 
+     * @param {*} value 
+     * @returns
+     */
 
     change(key, value) {
-        const data = Object(dataFile);
-        if (!propertyExists(data, key)) return error(`${key} not found`);
-        data[key] = value;
+        if (!this.#data.hasOwnProperty(key)) throw new Error(`${key} not found`);
+        this.#data[key] = value;
         return this;
     }
 
+
+
+
+    /**
+     * 
+     * @param {string} key 
+     * @returns
+     */
+
     remove(key) {
-        const data = Object(dataFile);
         const isAry = Array.isArray(key);
         if (isAry) {
             key.forEach((k) => {
-                if (!propertyExists(data, k)) return error(`${k} not found`);
-                delete data[k];
+                if (!this.#data.hasOwnProperty(k)) throw new Error(`${k} not found`);
+                delete this.#data[k];
             })
         } else {
-            if (!propertyExists(data, key)) return error(`${key} not found`);
-            delete data[key]
+            if (!this.#data.hasOwnProperty(key)) throw new Error(`${key} not found`);
+            delete this.#data[key]
         };
         return this;
     }
 
-    merge(obj) {
-        var object = Object(obj);
-        var data = Object(dataFile);
-        data = Object.assign(data, object)
+
+
+
+    /**
+     * 
+     * @param object 
+     * @returns
+     */
+
+    merge(object) {
+        this.#data = Object.assign(this.#data, object)
         return this;
     }
 
-    preview() {
-        return dataFile;
+
+
+    /**
+     * 
+     * @param object 
+     * @returns
+     */
+
+    replace(object) {
+        this.#data = object
+        return this;
     }
+
+
+
+
+    /**
+     * 
+     * @returns {object}
+     */
+
+    preview() {
+        return this.#data;
+    }
+
+
+
+
+    /**
+     * 
+     * @param {string} key 
+     * @returns {*}
+     */
 
     get(key) {
-        const data = Object(dataFile);
-        if (!propertyExists(data, key)) return error(`${key} not found`);
-        return data[key];
+        if (!this.#data.hasOwnProperty(key)) throw new Error(`${key} not found`);
+        return this.#data[key];
     }
 
+
+
+
+    /**
+     * 
+     * @param {string} key 
+     * @returns {boolean}
+     */
+
     exists(key) {
-        const data = Object(dataFile);
-        if (propertyExists(data, key)) return true;
+        if (this.#data.hasOwnProperty(key)) return true;
         else return false;
     }
 
 
 
 
+    /**
+     * 
+     * @returns 
+     */
 
     length() {
-        const data = Object(dataFile);
-        if (!Array.isArray(data)) return error("please join array to use this function");
-        return data.length;
+        if (!Array.isArray(this.#data)) throw new Error("please join array to use this function");
+        return this.#data.length;
     }
 
 
-    createElm(value) {
-        const data = Object(dataFile);
-        if (!Array.isArray(data)) return error("please join array to use this function");
-        data.push(value);
+
+
+    /**
+     * 
+     * @param {*} value 
+     * @returns 
+     */
+
+    setElm(value) {
+        if (!Array.isArray(this.#data)) throw new Error("please join array to use this function");
+        this.#data.push(value);
         return this;
     }
 
-    createElmInFirst(value) {
-        const data = Object(dataFile);
-        if (!Array.isArray(data)) return error("please join array to use this function");
-        data.unshift(value);
+
+
+
+
+    /**
+     * 
+     * @param {*} value 
+     * @returns 
+     */
+
+    setElmInFirst(value) {
+        if (!Array.isArray(this.#data)) throw new Error("please join array to use this function");
+        this.#data.unshift(value);
         return this;
     }
 
+
+
+
+    /**
+     * 
+     * @param {number} elm 
+     * @param {*} value 
+     * @returns 
+     */
 
     changeElm(elm, value) {
-        const data = Object(dataFile);
-        if (!Array.isArray(data)) return error("please join array to use this function");
-        if (elm > data.length - 1) return error("element number not found");
-        data[elm] = value;
+        if (!Array.isArray(this.#data)) throw new Error("please join array to use this function");
+        if (elm > this.#data.length - 1) throw new Error("element number not found");
+        this.#data[elm] = value;
         return this;
     }
 
 
+
+
+    /**
+     * 
+     * @param {number} elm 
+     * @returns 
+     */
+
     getElm(elm) {
-        const data = Object(dataFile);
-        if (!Array.isArray(data)) return error("please join array to use this function");
-        if (elm > data.length - 1) return error("element number not found");
-        return data[elm];
+        if (!Array.isArray(this.#data)) throw new Error("please join array to use this function");
+        if (elm > this.#data.length - 1) throw new Error("element number not found");
+        return this.#data[elm];
     }
 
 
+
+
+    /**
+     * 
+     * @param {number} elm 
+     * @returns 
+     */
+
     existsElm(elm) {
-        const data = Object(dataFile);
-        if (!Array.isArray(data)) return error("please join array to use this function");
-        const lng = data.length - 1;
+        if (!Array.isArray(this.#data)) throw new Error("please join array to use this function");
+        const lng = this.#data.length - 1;
         if (elm < lng) return true;
         else return false;
     }
 
 
+
+
+    /**
+     * 
+     * @param {number} elm 
+     * @returns 
+     */
+
     removeElm(elm) {
-        var data = Object(dataFile);
-        if (!Array.isArray(data)) return error("please join array to use this function");
-        if (elm > data.length - 1) return error("element number not found");
-        var filtered = data.filter(function (value, index, arr) {
+        if (!Array.isArray(this.#data)) throw new Error("please join array to use this function");
+        if (elm > this.#data.length - 1) throw new Error("element number not found");
+        var filtered = this.#data.filter(function (value, index, arr) {
             return index != elm;
         });
-        for (let i = 0; i <= data.length + 1; i++) {
-            data.pop();
-        }
-        Object.assign(data, filtered)
+        this.#data = filtered
         return this;
     }
 
+
+
+
+    /**
+     * 
+     * @param {string} key 
+     * @returns
+     */
 
     join(key) {
-        const data = Object(dataFile);
-        if (!propertyExists(data, key)) return error(`${key} not found`);
-        if (typeof data[key] == "object") {
-            dataFile = data[key];
-        } else return error(`${key} is not object`);
+        if (!this.#data.hasOwnProperty(key)) throw new Error(`${key} not found`);
+        if (typeof this.#data[key] == "object") {
+            this.#data = this.#data[key];
+        } else throw new Error(`${key} is not object`);
         return this;
     }
 
+
+
+
+    /**
+     * 
+     * @returns 
+     */
+
     leave() {
-        dataFile = pastDataFile;
+        this.#data = this.#main;
         return this;
     }
 
 
     comments = {
 
-        create: (key, value) => {
-            this.create(`//${key}//`, value);
+
+
+
+        /**
+         * 
+         * @param {string} key 
+         * @param {*} value 
+         * @returns
+        */
+        
+        set: (key, value) => {
+            this.set(`//${key}//`, value);
             return this;
         },
+
+
+
+    
+        /**
+         * 
+         * @param {string} key 
+         * @returns
+         */
 
         remove: (key) => {
             this.remove(`//${key}//`);
             return this;
         },
 
+
+
+
+        /**
+         * 
+         * @param {string} key 
+         * @returns {*}
+         */
+
         get: (key) => {
             return this.get(`//${key}//`);
         },
 
-        all: () => {
-            const obj = Object(dataFile);
-            const objKeys = Object.keys(dataFile);
-            var result = [];
-            for (let i of objKeys) {
-                if (i.startsWith("//") && i.startsWith("//")) result.push({ title: i.replace(/\/\//g, ""), value: obj[i] });
-            }
 
+
+
+        /**
+         * 
+         * @returns {array}
+         */
+
+        all: () => {
+            const keys = Object.keys(this.#data);
+            var result = [];
+            for (let i of keys) {
+                if (i.startsWith("//") && i.endsWith("//")) result.push({ title: i.replace(/\/\//g, ""), value: data[i] });
+            }
             return result;
         }
 
@@ -213,37 +404,61 @@ class json {
     conditional = {
         key: {
 
+
+
+
+            /**
+             * 
+             * @param {*} keyword 
+             * @returns 
+            */
+            
             startsWith: (keyword) => {
-                const obj = Object(dataFile);
-                const objKeys = Object.keys(dataFile);
+                const keys = Object.keys(this.#data);
                 var result = {};
-                for (let i of objKeys) {
+                for (let i of keys) {
                     if (i.startsWith(keyword)) {
-                        result[i] = obj[i]
+                        result[i] = this.#data[i]
                     }
                 }
                 return result;
             },
+
+
+
+
+            /**
+             * 
+             * @param {*} keyword 
+             * @returns 
+             */
 
             includes: (keyword) => {
-                const obj = Object(dataFile);
-                const objKeys = Object.keys(dataFile);
+                const keys = Object.keys(this.#data);
                 var result = {};
-                for (let i of objKeys) {
+                for (let i of keys) {
                     if (i.includes(keyword)) {
-                        result[i] = obj[i]
+                        result[i] = this.#data[i]
                     }
                 }
                 return result;
             },
 
+
+
+
+            /**
+             * 
+             * @param {*} keyword 
+             * @returns 
+             */
+            
             endsWith: (keyword) => {
-                const obj = Object(dataFile);
-                const objKeys = Object.keys(dataFile);
+                const keys = Object.keys(this.#data);
                 var result = {};
-                for (let i of objKeys) {
+                for (let i of keys) {
                     if (i.endsWith(keyword)) {
-                        result[i] = obj[i]
+                        result[i] = this.#data[i]
                     }
                 }
                 return result;
@@ -253,40 +468,64 @@ class json {
 
         value: {
 
+
+
+
+            /**
+             * 
+             * @param {*} keyword 
+             * @returns 
+            */
+            
             startsWith: (keyword) => {
-                const obj = Object(dataFile);
-                const objKeys = Object.keys(dataFile);
-                const objValues = Object.values(dataFile);
+                const keys = Object.keys(this.#data);
+                const values = Object.values(this.#data);
                 var result = {};
-                for (let i = 0; i < objValues.length; i++) {
-                    if (objValues[i].toString().startsWith(keyword)) {
-                        result[objKeys[i]] = objValues[i]
+                for (let i = 0; i < values.length; i++) {
+                    if (values[i].toString().startsWith(keyword)) {
+                        result[keys[i]] = values[i]
                     }
                 }
                 return result;
             },
+
+
+
+
+            /**
+             * 
+             * @param {*} keyword 
+             * @returns 
+             */
 
             includes: (keyword) => {
-                const obj = Object(dataFile);
-                const objKeys = Object.keys(dataFile);
-                const objValues = Object.values(dataFile);
+                const keys = Object.keys(this.#data);
+                const values = Object.values(this.#data);
                 var result = {};
-                for (let i = 0; i < objValues.length; i++) {
-                    if (objValues[i].toString().includes(keyword)) {
-                        result[objKeys[i]] = objValues[i]
+                for (let i = 0; i < values.length; i++) {
+                    if (values[i].toString().includes(keyword)) {
+                        result[keys[i]] = values[i]
                     }
                 }
                 return result;
             },
 
+
+
+
+            /**
+             * 
+             * @param {*} keyword 
+             * @returns 
+             */
+
             endsWith: (keyword) => {
-                const obj = Object(dataFile);
-                const objKeys = Object.keys(dataFile);
-                const objValues = Object.values(dataFile);
+                const keys = Object.keys(data);
+                const values = Object.values(data);
                 var result = {};
-                for (let i = 0; i < objValues.length; i++) {
-                    if (objValues[i].toString().endsWith(keyword)) {
-                        result[objKeys[i]] = objValues[i]
+                for (let i = 0; i < values.length; i++) {
+                    if (values[i].toString().endsWith(keyword)) {
+                        result[keys[i]] = values[i]
                     }
                 }
                 return result;
@@ -297,7 +536,5 @@ class json {
     }
 
 }
-
-
 
 module.exports = json;
